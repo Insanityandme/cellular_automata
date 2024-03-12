@@ -6,8 +6,6 @@
 
 </div>
 
-
---- 
 This is a fun little side project I've been working on while in University.
 
 It's inspired by an awesome programmer and content creator through this video: https://www.youtube.com/watch?v=Hz_13P7lRoA&t=2748s&ab_channel=TsodingDaily
