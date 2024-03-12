@@ -1,6 +1,5 @@
 # Cellular Automata Explorer
-
-<img src="https://github.com/Insanityandme/cellular_automata/assets/1380257/1554f6e4-d4bf-4759-94fc-3b0e3c80dbc4" width="600" height="500"/> 
+![image](https://github.com/Insanityandme/cellular_automata/assets/1380257/1554f6e4-d4bf-4759-94fc-3b0e3c80dbc4)
 
 This is a fun little side project I've been working on while in University.
 
