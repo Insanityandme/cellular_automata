@@ -2,10 +2,12 @@
 
 # Cellular Automata Explorer
 
+</div>
+
 <img src="https://github.com/Insanityandme/cellular_automata/assets/1380257/1554f6e4-d4bf-4759-94fc-3b0e3c80dbc4" width="500" height="400"/> 
 <img src="https://github.com/Insanityandme/cellular_automata/assets/1380257/860744a5-6905-43da-bf20-1c9f3a125c55" width="500" height="400"/> 
 
-</div>
+
 
 --- 
 This is a fun little side project I've been working on while in University.
