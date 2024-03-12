@@ -19,7 +19,7 @@ This is what his project became: https://github.com/tsoding/autocell
 I went a different route and wanted to visualize different types of Cellular Automata, the one that is most famous is Conways Game of Life.
 I chose to implement two more, one is called Brians Brain and the other Seeds. They still have very simple rules but even so has fun and very different characteristics.
 
-Would love it if you tried this little program and tell me what you think!
+The program is terribly designed both aesthetically and UX wise but I wanted to make something quick that has the functionality I find interesting.
 
 ## Usage
 1. ```git clone https://github.com/Insanityandme/cellular_automata.git```
