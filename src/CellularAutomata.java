@@ -1,3 +1,4 @@
+
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
@@ -8,19 +9,16 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class CellularAutomata {
-    private final int BOARD_ROWS = 48;
-    private final int BOARD_COLS = BOARD_ROWS;
+    private int BOARD_ROWS = 100;
+    private int BOARD_COLS = 100;
     private int[][] currentBoard = createEmptyBoard();
     private int[][] nextBoard = createEmptyBoard();
-    private final ArrayList<HashMap<String, Integer>> GoL;
-    private final ArrayList<HashMap<String, Integer>> briansBrain;
-    private final ArrayList<HashMap<String, Integer>> seeds;
     private final ButtonGroup radioButtonGrp;
     private final JLabel generations;
     private int generationCounter = 0;
     private final Timer timer;
-
     private final JSlider speed;
+    private final JComboBox<Integer> brushSizeList;
 
     public CellularAutomata() {
         JFrame window = new JFrame("Cellular Automata");
@@ -84,9 +82,12 @@ public class CellularAutomata {
         ClearButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                drawPane.clearCanvas(drawPane.getGraphics());
                 currentBoard = createEmptyBoard();
                 drawPane.setBoard(currentBoard);
-                drawPane.paintComponent(drawPane.getGraphics());
+
+                generationCounter = 0;
+                generations.setText("generations: " + generationCounter);
             }
         });
 
@@ -105,9 +106,9 @@ public class CellularAutomata {
         speed.setLocation(735, 190);
         speed.setMajorTickSpacing(125);
         speed.setMinorTickSpacing(25);
-        speed.setValue(100);
+        speed.setValue(1);
         speed.setMaximum(250);
-        speed.setMinimum(0);
+        speed.setMinimum(1);
 
         JLabel value = new JLabel("value: " + speed.getValue());
         value.setSize(100, 30);
@@ -125,18 +126,27 @@ public class CellularAutomata {
         speed.setPaintLabels(true);
         window.add(speed);
 
-        String[] choices = {"Game of life", "Brians brain", "Seeds"};
-        JComboBox<String> automataList = new JComboBox<>(choices);
+        String[] automataChoice = {"Game of life", "Brians brain", "Seeds"};
+        JComboBox<String> automataList = new JComboBox<>(automataChoice);
         automataList.setSize(100, 50);
         automataList.setLocation(635, 300);
         automataList.setSelectedIndex(0);
         window.add(automataList);
 
+        Integer[] brushSize = {1, 2, 4, 8};
+        brushSizeList = new JComboBox<>(brushSize);
+        brushSizeList.setSize(100, 50);
+        brushSizeList.setLocation(755, 300);
+        brushSizeList.setSelectedIndex(0);
+        window.add(brushSizeList);
         window.add(drawPane);
 
-        GoL = new ArrayList<>();
-        HashMap<String, Integer> loseState = new HashMap<>();
-        HashMap<String, Integer> winState = new HashMap<>();
+        final ArrayList<TreeMap<String, Integer>> GoL = new ArrayList<>();
+        final ArrayList<TreeMap<String, Integer>> briansBrain = new ArrayList<>();
+        final ArrayList<TreeMap<String, Integer>> seeds = new ArrayList<>();
+
+        TreeMap<String, Integer> loseState = new TreeMap<>();
+        TreeMap<String, Integer> winState = new TreeMap<>();
         loseState.put("53", 1);
         loseState.put("default", 0);
         winState.put("62", 1);
@@ -145,19 +155,17 @@ public class CellularAutomata {
         GoL.add(loseState);
         GoL.add(winState);
 
-        seeds = new ArrayList<>();
-        HashMap<String, Integer> loseStateSeeds = new HashMap<>();
-        HashMap<String, Integer> winStateSeeds = new HashMap<>();
+        TreeMap<String, Integer> loseStateSeeds = new TreeMap<>();
+        TreeMap<String, Integer> winStateSeeds = new TreeMap<>();
         loseStateSeeds.put("62", 1);
         loseStateSeeds.put("default", 0);
         winStateSeeds.put("default", 0);
         seeds.add(loseStateSeeds);
         seeds.add(winStateSeeds);
 
-        briansBrain = new ArrayList<>();
-        HashMap<String, Integer> loseStateBrian = new HashMap<>();
-        HashMap<String, Integer> winStateBrian = new HashMap<>();
-        HashMap<String, Integer> dyingStateBrian = new HashMap<>();
+        TreeMap<String, Integer> loseStateBrian = new TreeMap<>();
+        TreeMap<String, Integer> winStateBrian = new TreeMap<>();
+        TreeMap<String, Integer> dyingStateBrian = new TreeMap<>();
         loseStateBrian.put("026", 1);
         loseStateBrian.put("125", 1);
         loseStateBrian.put("224", 1);
@@ -172,7 +180,7 @@ public class CellularAutomata {
         briansBrain.add(winStateBrian);
         briansBrain.add(dyingStateBrian);
 
-        AtomicReference<ArrayList<HashMap<String, Integer>>> chosenAutomata = new AtomicReference<>(GoL);
+        AtomicReference<ArrayList<TreeMap<String, Integer>>> chosenAutomata = new AtomicReference<>(GoL);
 
         automataList.addActionListener(e -> {
             int automataIndex = automataList.getSelectedIndex();
@@ -199,7 +207,7 @@ public class CellularAutomata {
                 nextBoard = temp;
 
                 drawPane.setBoard(currentBoard);
-                drawPane.paintComponent(drawPane.getGraphics());
+                drawPane.paint(drawPane.getGraphics());
 
                 generationCounter++;
                 String counter = String.format("generations: %d", generationCounter);
@@ -215,7 +223,7 @@ public class CellularAutomata {
             nextBoard = temp;
 
             drawPane.setBoard(currentBoard);
-            drawPane.paintComponent(drawPane.getGraphics());
+            drawPane.paint(drawPane.getGraphics());
 
             generationCounter++;
             String counter = String.format("generations: %d", generationCounter);
@@ -227,8 +235,6 @@ public class CellularAutomata {
             @Override
             public void mouseClicked(MouseEvent e) {
                 timer.start();
-                generationCounter = 0;
-                generations.setText("generations: " + generationCounter);
             }
         });
 
@@ -246,8 +252,9 @@ public class CellularAutomata {
         private int[][] board = new int[BOARD_ROWS][BOARD_COLS];
         private final int BOARD_WIDTH = 600;
         private final int BOARD_HEIGHT = 600;
-        private final int CELL_WIDTH = BOARD_WIDTH / BOARD_ROWS;
-        private final int CELL_HEIGHT = BOARD_HEIGHT / BOARD_COLS;
+        private int CELL_WIDTH = BOARD_WIDTH / BOARD_ROWS;
+        private int CELL_HEIGHT = BOARD_HEIGHT / BOARD_COLS;
+        private boolean paintBG = false;
         private final Color[] stateColors = {
                 Color.GRAY,
                 Color.RED,
@@ -258,30 +265,33 @@ public class CellularAutomata {
 
         public DrawPane() {
             setSize(BOARD_WIDTH, BOARD_HEIGHT);
-            setVisible(true);
             setBackground(Color.GRAY);
 
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (e.getX() > 0 && e.getX() < (BOARD_WIDTH - 25) && e.getY() > 0 && e.getY() < (BOARD_HEIGHT - 25)) {
-                        int col = e.getX() / CELL_WIDTH;
-                        int row = e.getY() / CELL_HEIGHT;
-                        currentBoard[row][col] = getIndexOfRadioButton();
-
-                        setBoard(currentBoard);
-                        paintComponent(getGraphics());
+                    int col = e.getX() / CELL_WIDTH;
+                    int row = e.getY() / CELL_HEIGHT;
+                    if (0 <= row && row < BOARD_ROWS) {
+                        if (0 <= col && col < BOARD_COLS) {
+                            brushSize(col, row);
+                        }
                     }
+
+                    // if (e.getX() > 0 && e.getX() < BOARD_WIDTH && e.getY() > 0 && e.getY() < BOARD_HEIGHT) {
+                    //     // TODO make sure that we are within bounds, or make sure that col computes col correctly
+                    //     int col = e.getX() / CELL_WIDTH;
+                    //     int row = e.getY() / CELL_HEIGHT;
+
+                    //     System.out.println("ROWS: " + BOARD_ROWS);
+                    //     System.out.println("COLS: " + BOARD_COLS);
+
+                    //     if (col < currentBoard.length && row < currentBoard.length) {
+                    //         brushSize(col, row);
+                    //     }
+                    // }
                 }
 
-            });
-
-            addMouseWheelListener(e -> {
-                if (e.getWheelRotation() < 0)
-                    System.out.println("mouse wheel up");
-                else {
-                    System.out.println("mouse wheel down");
-                }
             });
 
             addMouseMotionListener(new MouseMotionListener() {
@@ -291,29 +301,70 @@ public class CellularAutomata {
                     int row = e.getY() / CELL_HEIGHT;
                     if (0 <= row && row < BOARD_ROWS) {
                         if (0 <= col && col < BOARD_COLS) {
-                            currentBoard[row][col] = getIndexOfRadioButton();
-
-                            setBoard(currentBoard);
-                            paintComponent(getGraphics());
+                            brushSize(col, row);
                         }
                     }
                 }
 
                 @Override
                 public void mouseMoved(MouseEvent e) {
-                    /*
-                    if (e.getX() > 0 && e.getX() < BOARD_WIDTH && e.getY() > 0 && e.getY() < BOARD_HEIGHT) {
-                        int col = e.getX() / CELL_WIDTH;
-                        int row = e.getY() / CELL_HEIGHT;
-                        currentBoard[row][col] = getIndexOfRadioButton();
-
-                        setBoard(currentBoard);
-                        paintComponent(getGraphics());
-                    }
-
-                     */
                 }
             });
+
+            /*
+            addMouseWheelListener(e -> {
+                if (e.getWheelRotation() < 0) {
+                    BOARD_ROWS -= 2;
+                    BOARD_COLS -= 2;
+                } else {
+                    BOARD_ROWS += 2;
+                    BOARD_COLS += 2;
+                }
+
+                CELL_WIDTH = BOARD_WIDTH / BOARD_ROWS;
+                CELL_HEIGHT = BOARD_HEIGHT / BOARD_COLS;
+
+                currentBoard = fillEmptyBoard(currentBoard);
+                nextBoard = createEmptyBoard();
+
+                paint(getGraphics());
+            });
+             */
+
+        }
+
+        private void brushSize(int col, int row) {
+            int index = brushSizeList.getSelectedIndex();
+            int size = brushSizeList.getItemAt(index);
+
+            switch (size) {
+                case 1:
+                    currentBoard[row][col] = getIndexOfRadioButton();
+                    break;
+                case 2:
+                    currentBoard[row][col] = getIndexOfRadioButton();
+                    currentBoard[row - 1][col] = getIndexOfRadioButton();
+                    break;
+                case 4:
+                    currentBoard[row][col] = getIndexOfRadioButton();
+                    currentBoard[row - 1][col - 1] = getIndexOfRadioButton();
+                    currentBoard[row][col - 1] = getIndexOfRadioButton();
+                    currentBoard[row - 1][col] = getIndexOfRadioButton();
+                    break;
+                case 8:
+                    currentBoard[row][col] = getIndexOfRadioButton();
+                    currentBoard[row][col - 1] = getIndexOfRadioButton();
+                    currentBoard[row - 1][col] = getIndexOfRadioButton();
+                    currentBoard[row - 1][col - 1] = getIndexOfRadioButton();
+
+                    currentBoard[row + 1][col] = getIndexOfRadioButton();
+                    currentBoard[row + 1][col + 1] = getIndexOfRadioButton();
+                    currentBoard[row][col + 1] = getIndexOfRadioButton();
+                    currentBoard[row + 1][col] = getIndexOfRadioButton();
+            }
+
+            setBoard(currentBoard);
+            paint(getGraphics());
         }
 
         public void setBoard(int[][] board) {
@@ -335,7 +386,14 @@ public class CellularAutomata {
         }
 
         @Override
-        public void paintComponent(Graphics g) {
+        public void paint(Graphics g) {
+            // Rectangle rect = g.getClipBounds();
+            // temporary solution to paint the background once...
+            if (!paintBG)
+                super.paintComponent(g);
+
+            paintBG = true;
+
             int CELL_WIDTH = BOARD_WIDTH / BOARD_ROWS;
             int CELL_HEIGHT = BOARD_HEIGHT / BOARD_COLS;
 
@@ -343,8 +401,29 @@ public class CellularAutomata {
                 for (int c = 0; c < board[r].length; ++c) {
                     int x = c * CELL_WIDTH;
                     int y = r * CELL_HEIGHT;
-                    g.setColor(stateColors[board[r][c]]);
-                    g.fillRect(x, y, CELL_WIDTH, CELL_HEIGHT);
+                    if (stateColors[currentBoard[r][c]] != stateColors[nextBoard[r][c]]) {
+                        g.setColor(stateColors[board[r][c]]);
+
+                        g.fillRect(x, y, CELL_WIDTH, CELL_HEIGHT);
+                        // rect.setRect(x, y, CELL_WIDTH, CELL_HEIGHT);
+                    }
+                }
+            }
+        }
+
+        public void clearCanvas(Graphics g) {
+            int CELL_WIDTH = BOARD_WIDTH / BOARD_ROWS;
+            int CELL_HEIGHT = BOARD_HEIGHT / BOARD_COLS;
+
+            for (int r = 0; r < board.length; ++r) {
+                for (int c = 0; c < board[r].length; ++c) {
+                    int x = c * CELL_WIDTH;
+                    int y = r * CELL_HEIGHT;
+
+                    if (stateColors[currentBoard[r][c]] != Color.GRAY) {
+                        g.setColor(Color.GRAY);
+                        g.fillRect(x, y, CELL_WIDTH, CELL_HEIGHT);
+                    }
                 }
             }
         }
@@ -354,48 +433,69 @@ public class CellularAutomata {
         int[][] board = new int[BOARD_COLS][BOARD_ROWS];
 
         for (int[] ints : board) {
-            Arrays.fill(ints, 0);
+            for (int i = 0; i < ints.length; i++)
+                ints[i] = 0;
         }
 
         return board;
     }
 
-    public void computeNextBoard(ArrayList<HashMap<String, Integer>> automaton, int[][] current, int[][] next) {
-        int[] nbors = new int[automaton.size()];
+    public int[][] fillEmptyBoard(int[][] previousBoard) {
+        int[][] board = new int[BOARD_COLS][BOARD_ROWS];
 
-        for (int r = 0; r < current.length; ++r) {
-            for (int c = 0; c < current[r].length; ++c) {
-                String currentNbors = countNbors(current, nbors, r, c);
-                HashMap<String, Integer> transition = automaton.get(current[r][c]);
-
-                if (transition.get(currentNbors) != null) next[r][c] = transition.get(currentNbors);
-                if (transition.get(currentNbors) == null) next[r][c] = transition.get("default");
-            }
-        }
-
-    }
-
-    public String countNbors(int[][] board, int[] nbors, int r0, int c0) {
-        Arrays.fill(nbors, 0);
-
-        for (int dr = -1; dr <= 1; ++dr) {
-            for (int dc = -1; dc <= 1; ++dc) {
-                if (dr != 0 || dc != 0) {
-                    int r = dr + r0;
-                    int c = dc + c0;
-                    if (0 <= r && r < BOARD_ROWS) {
-                        if (0 <= c && c < BOARD_COLS) {
-                            nbors[board[r][c]]++;
-                        }
-                    }
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[i].length; j++) {
+                if (i < previousBoard.length && j < previousBoard.length) {
+                    board[i][j] = previousBoard[i][j];
                 }
             }
         }
 
-        return Arrays.toString(nbors).replaceAll("\\[|]|,|\\s", "");
+        return board;
+    }
+
+    public void computeNextBoard(ArrayList<TreeMap<String, Integer>> automaton, int[][] current, int[][] next) {
+        int[] nbors = new int[automaton.size()];
+
+        // NOTE: Padding is used here,
+        // essentially using a cell on each side that is not displayed but used for computing
+        // so that I can avoid more conditional logic
+        for (int r = 1; r < current.length - 1; ++r) {
+            for (int c = 1; c < current[r].length - 1; ++c) {
+
+                // All this computes the currentNbors
+                for (int i = 0; i < nbors.length; i++)
+                    nbors[i] = 0;
+                for (int dr = -1; dr <= 1; ++dr) {
+                    for (int dc = -1; dc <= 1; ++dc) {
+                        if (dr != 0 || dc != 0) {
+                            int r0 = dr + r;
+                            int c0 = dc + c;
+                            nbors[current[r0][c0]]++;
+                        }
+                    }
+                }
+                StringBuilder builder = new StringBuilder();
+                for (int i : nbors) {
+                    builder.append(i);
+                }
+                String currentNbors = builder.toString();
+
+                TreeMap<String, Integer> transition = automaton.get(current[r][c]);
+
+                Integer temp = transition.get(currentNbors);
+                if (temp != null) {
+                    next[r][c] = temp;
+                }
+                if (temp == null) {
+                    next[r][c] = transition.get("default"); // .get O("default") ->
+                }
+            }
+        }
+
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(CellularAutomata::new);
+        new CellularAutomata();
     }
 }
