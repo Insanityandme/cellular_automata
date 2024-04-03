@@ -26,7 +26,7 @@ public class CellularAutomata {
         int WINDOW_WIDTH = 900;
         int WINDOW_HEIGHT = 700;
         window.setSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-        window.setResizable(false);
+        window.setResizable(true);
         window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         window.setLocationRelativeTo(null);
         window.setLayout(null);
